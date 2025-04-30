@@ -2,31 +2,155 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sign Language AR</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BISINDO Sign Language Detection</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: sans-serif;
-            text-align: center;
-            background-color: #f9f9f9;
+        :root {
+            --primary: #4361ee;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --danger: #f94144;
+            --dark: #212529;
+            --light: #f8f9fa;
         }
-        video {
-            border: 2px solid #333;
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--dark);
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-top: 30px;
+        }
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .video-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: black;
             border-radius: 10px;
-            margin-top: 20px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        #canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        #video {
+            display: none;
+        }
+        .result-container {
+            background: var(--light);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
         }
         #result {
-            font-size: 24px;
-            margin-top: 20px;
-            color: #333;
+            font-size: 22px;
+            font-weight: 600;
+            margin: 0 0 5px 0;
+        }
+        #gesture {
+            font-size: 28px;
+            margin: 5px 0 10px 0;
+        }
+        .confidence-meter {
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+        #confidenceMeter {
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .confidence-label {
+            font-size: 14px;
+            color: #6c757d;
+        }
+        .instructions {
+            background: #e9f5ff;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .loading {
+            text-align: center;
+            padding: 15px;
+            background: var(--light);
+            border-radius: 10px;
+            display: none;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            #result {
+                font-size: 20px;
+            }
+            #gesture {
+                font-size: 24px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Sign Language AR Detection</h1>
-    <video id="video" width="400" height="300" autoplay></video>
-    <canvas id="canvas" style="display: none;"></canvas>
-    <p id="result">Detecting...</p>
+    <div class="container">
+        <h1>BISINDO Sign Language Detection</h1>
+        
+        <div class="instructions">
+            <h3>Petunjuk Penggunaan:</h3>
+            <ol>
+                <li>Izinkan akses kamera saat diminta</li>
+                <li>Letakkan tangan Anda di area kotak tengah</li>
+                <li>Tunggu hingga sistem mengenali isyarat</li>
+                <li>Untuk hasil terbaik, gunakan latar belakang polos</li>
+            </ol>
+        </div>
+        
+        <div class="video-container">
+            <video id="video" autoplay playsinline muted></video>
+            <canvas id="canvas"></canvas>
+        </div>
+        
+        <div class="result-container">
+            <p id="result">Menginisialisasi kamera...</p>
+            <p id="gesture"></p>
+            <div class="confidence-meter">
+                <div id="confidenceMeter"></div>
+            </div>
+            <div class="confidence-label">Tingkat Kepercayaan</div>
+        </div>
+        
+        <div class="loading" id="loading">
+            Memulai kamera, harap tunggu...
+        </div>
+    </div>
 
     <script src="/static/js/main.js"></script>
 </body>
