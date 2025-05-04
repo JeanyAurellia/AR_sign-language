@@ -1,157 +1,66 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BISINDO Sign Language Detection</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #4361ee;
-            --success: #4cc9f0;
-            --warning: #f8961e;
-            --danger: #f94144;
-            --dark: #212529;
-            --light: #f8f9fa;
-        }
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--dark);
-        }
-        .container {
-            max-width: 800px;
-            width: 100%;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            padding: 25px;
-            margin-top: 30px;
-        }
-        h1 {
-            color: var(--primary);
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .video-container {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 4/3;
-            background: black;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-        #canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        #video {
-            display: none;
-        }
-        .result-container {
-            background: var(--light);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        #result {
-            font-size: 22px;
-            font-weight: 600;
-            margin: 0 0 5px 0;
-        }
-        #gesture {
-            font-size: 28px;
-            margin: 5px 0 10px 0;
-        }
-        .confidence-meter {
-            height: 10px;
-            background: #e9ecef;
-            border-radius: 5px;
-            overflow: hidden;
-            margin-bottom: 5px;
-        }
-        #confidenceMeter {
-            height: 100%;
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-        .confidence-label {
-            font-size: 14px;
-            color: #6c757d;
-        }
-        .instructions {
-            background: #e9f5ff;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-        .loading {
-            text-align: center;
-            padding: 15px;
-            background: var(--light);
-            border-radius: 10px;
-            display: none;
-        }
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-            }
-            h1 {
-                font-size: 24px;
-            }
-            #result {
-                font-size: 20px;
-            }
-            #gesture {
-                font-size: 24px;
-            }
-        }
-    </style>
+  <title>AR Sign Language Detection</title>
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <script src="https://cdn.rawgit.com/jeromeetienne/ar.js/1.7.2/aframe/build/aframe-ar.min.js"></script>
+  <script src="/static/js/main.js"></script>
+  <script src="/static/js/ar-handler.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Poppins', sans-serif;
+      background: #000;
+    }
+
+    #gestureResult {
+      position: fixed;
+      top: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 20px 40px;
+      background: rgba(255,255,255,0.9);
+      color: #111;
+      font-size: 64px;
+      font-weight: bold;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      transition: all 0.4s ease;
+      opacity: 0;
+      animation: fadeInZoom 0.6s ease forwards;
+    }
+
+    @keyframes fadeInZoom {
+      0% {
+        opacity: 0;
+        transform: translateX(-50%) scale(0.5);
+      }
+      100% {
+        opacity: 1;
+        transform: translateX(-50%) scale(1);
+      }
+    }
+
+    a-scene {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>BISINDO Sign Language Detection</h1>
-        
-        <div class="instructions">
-            <h3>Petunjuk Penggunaan:</h3>
-            <ol>
-                <li>Izinkan akses kamera saat diminta</li>
-                <li>Letakkan tangan Anda di area kotak tengah</li>
-                <li>Tunggu hingga sistem mengenali isyarat</li>
-                <li>Untuk hasil terbaik, gunakan latar belakang polos</li>
-            </ol>
-        </div>
-        
-        <div class="video-container">
-            <video id="video" autoplay playsinline muted></video>
-            <canvas id="canvas"></canvas>
-        </div>
-        
-        <div class="result-container">
-            <p id="result">Menginisialisasi kamera...</p>
-            <p id="gesture"></p>
-            <div class="confidence-meter">
-                <div id="confidenceMeter"></div>
-            </div>
-            <div class="confidence-label">Tingkat Kepercayaan</div>
-        </div>
-        
-        <div class="loading" id="loading">
-            Memulai kamera, harap tunggu...
-        </div>
-    </div>
+  <div id="gestureResult">-</div>
 
-    <script src="/static/js/main.js"></script>
+  <!-- AR Scene -->
+  <a-scene embedded arjs="sourceType: webcam;">
+    <a-marker type="pattern" url="/static/marker/custom-marker.patt">
+      <a-box position="0 0.5 0" material="color: #FF6347;"></a-box>
+    </a-marker>
+    <a-entity camera></a-entity>
+  </a-scene>
+
 </body>
 </html>
